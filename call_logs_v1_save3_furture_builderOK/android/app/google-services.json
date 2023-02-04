@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "433884624359",
+    "firebase_url": "https://call-logs-a024b-default-rtdb.firebaseio.com",
+    "project_id": "call-logs-a024b",
+    "storage_bucket": "call-logs-a024b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:433884624359:android:695a0b67d74d5ad21df942",
+        "android_client_info": {
+          "package_name": "com.example.call_logs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "433884624359-vt09m7r8b9ad96icobooreqe3kooe299.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBlhK6g78uhgu7AGHT6yxpugBImcnz9ZwQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "433884624359-vt09m7r8b9ad96icobooreqe3kooe299.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

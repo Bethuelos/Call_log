@@ -1,0 +1,616 @@
+// ignore_for_file: prefer_const_constructors, avoid_print
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:oktoast/oktoast.dart';
+import 'package:call_log/call_log.dart';
+import 'phonelog_view.dart';
+// import 'package:camera/camera.dart';
+// import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    home: Home(),
+  ));
+}
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> with WidgetsBindingObserver {
+  // openPhonelogs() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => PhonelogsScreen(),
+  //     ),
+  //   );
+  // }
+  PhoneLogView plv = PhoneLogView();
+  late AppLifecycleState _notification;
+  late Future<Iterable<CallLogEntry>> logs;
+
+  Future<Iterable<CallLogEntry>> getphoneLogs() {
+    return CallLog.get();
+  }
+
+  checkPermissionPhoneLogs() async {
+    if (await Permission.phone.request().isGranted) {
+      // openPhonelogs();
+      showToast("You have permission to view logs.",
+          position: ToastPosition.top);
+    } else {
+      showToast("Provide Phone permission to make a call and view logs.",
+          position: ToastPosition.bottom);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    logs = getphoneLogs();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (AppLifecycleState.resumed == state) {
+      setState(() {
+        logs = getphoneLogs();
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Call Log App'),
+          centerTitle: true,
+          bottom: TabBar(
+            // ignore: prefer_const_literals_to_create_immutables
+            tabs: [
+              Tab(
+                icon: Icon(Icons.recent_actors_sharp),
+                text: 'Recents',
+              ),
+              Tab(
+                icon: Icon(Icons.contact_phone),
+                text: 'Contacts',
+              ),
+              Tab(
+                icon: Icon(Icons.query_stats),
+                text: 'Statistics',
+              ),
+              Tab(
+                icon: Icon(Icons.camera),
+                text: 'Camera',
+              ),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          // ignore: prefer_const_literals_to_create_immutables
+          children: <Widget>[
+            Center(
+              child: plv.phoneLogView(logs),
+            ),
+            Center(
+              child: Text('Contacts'),
+            ),
+            Center(
+              child: Text('Statistics'),
+            ),
+            Center(
+              child: IconButton(
+                icon: Icon(Icons.camera_alt_rounded),
+                iconSize: 50.0,
+                onPressed: () {},
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: checkPermissionPhoneLogs,
+          child: Icon(Icons.numbers),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ignore_for_file: prefer_const_constructors, avoid_print
+import 'package:flutter/material.dart';
+import 'package:call_log/call_log.dart';
+// import 'package:flutter/services.dart';
+// import 'package:workmanager/workmanager.dart';
+import 'package:intl/intl.dart';
+// import 'package:charts_flutter/flutter.dart' as chart;
+import 'package:syncfusion_flutter_charts/charts.dart';
+// import 'package:syncfusion_flutter_charts/sparkcharts.dart';
+// import 'package:fl_chart/fl_chart.dart';
+
+// void callbackDispatcher() {
+//   Workmanager().executeTask((dynamic task, dynamic inputData) async {
+//     print('Background Services are Working!');
+//     try {
+//       final Iterable<CallLogEntry> cLog = await CallLog.get();
+//       print('Queried call log entries');
+//       for (CallLogEntry entry in cLog) {
+//         print('-------------------------------------');
+//         print('F. NUMBER  : ${entry.formattedNumber}');
+//         print('C.M. NUMBER: ${entry.cachedMatchedNumber}');
+//         print('NUMBER     : ${entry.number}');
+//         print('NAME       : ${entry.name}');
+//         print('TYPE       : ${entry.callType}');
+//         // print(
+//         // 'DATE       : ${DateTime.fromMillisecondsSinceEpoch(entry.timestam)}');
+//         print('DURATION   : ${entry.duration}');
+//         print('ACCOUNT ID : ${entry.phoneAccountId}');
+//         print('ACCOUNT ID : ${entry.phoneAccountId}');
+//         print('SIM NAME   : ${entry.simDisplayName}');
+//         print('-------------------------------------');
+//       }
+//       return true;
+//     } on PlatformException catch (e, s) {
+//       print(e);
+//       print(s);
+//       return true;
+//     }
+//   });
+// }
+
+void main() {
+  runApp(Home());
+  // Workmanager().initialize(callbackDispatcher, isInDebugMode: true);s
+}
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> with WidgetsBindingObserver {
+  // late AppLifecycleState _notification;
+  late CallLog _callLogEntries;
+  late List<Operator> _operator;
+  // Iterable<CallLogEntry> result = <CallLogEntry>[];
+
+  var a;
+  var b;
+  int callTypeOne = 0;
+  int callTypeTwo = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // final Iterable<CallLogEntry> result = await CallLog.query();
+    // _callLogEntries = result;
+    // Future.delayed(Duration(seconds: 0), () async {
+    //   //your async 'await' codes goes here
+    //   Iterable<CallLogEntry> result = await CallLog.query();
+    //   _callLogEntries = result;
+    // });
+    Future<Iterable<CallLogEntry>> result = CallLog.query();
+    // Future<Iterable<CallLogEntry>> asyncOperation() async {
+    //   final Iterable<CallLogEntry> result = await CallLog.query();
+    //   _callLogEntries = result;
+    //   print('future1 ${result}');
+    //   return result;
+    // }
+    _callLogEntries = result;
+
+    print('init $_callLogEntries');
+
+    setState(() {});
+
+    _operator = getOperator();
+  }
+
+  @override
+  void setState(VoidCallback fn) {
+    // TODO: implement setState
+    super.setState(fn);
+    // Future.delayed(Duration(seconds: 0), () async {
+    //   //your async 'await' codes goes here
+    //   final Iterable<CallLogEntry> result = await CallLog.query();
+    //   _callLogEntries = result;
+    // });
+    // final Iterable<CallLogEntry> result = await CallLog.query();
+    // _callLogEntries = result;
+    // _callLogEntries;
+
+    Future<Iterable<CallLogEntry>> result = CallLog.query();
+    _callLogEntries = result;
+
+    print('setstate $result');
+
+    _operator = getOperator();
+  }
+
+  Future<Iterable<CallLogEntry>> asyncOperation() async {
+    final Iterable<CallLogEntry> result = await CallLog.query();
+    print('future $result');
+    return result;
+  }
+
+  // Iterable<CallLogEntry> asyncOperation2() {
+  //   final Iterable<CallLogEntry> result = CallLog.get();
+  //   return result;
+  // }
+
+  String formatDate(DateTime dt) {
+    return DateFormat('d-MMM-y H:m:s').format(dt);
+  }
+
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   super.didChangeAppLifecycleState(state);
+
+  //   if (AppLifecycleState.resumed == state) {
+  //     setState(() {
+  //       _callLogEntries = result;
+  //     });
+  //   }
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    // const TextStyle mono = TextStyle(fontFamily: 'monospace');
+    final List<Widget> children = <Widget>[];
+    // final List<Row> elements = <Row>[];
+
+    for (CallLogEntry entry in _callLogEntries) {
+      a = entry.callType;
+
+      if (entry.callType == a) {
+        callTypeOne++;
+      } else {
+        b = entry.callType;
+        callTypeTwo++;
+      }
+      children.add(
+        Card(
+          child: ListTile(
+            leading: Text('${entry.simDisplayName}'),
+            title: Text('${entry.name}'),
+            subtitle: Text(
+                '${formatDate(DateTime.fromMillisecondsSinceEpoch(entry.timestamp!))} \n ${entry.duration}s \n ${entry.callType}'),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      // child: DefaultTabController(
+      //   length: 3,
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Call Log App'),
+            centerTitle: true,
+            bottom: TabBar(
+              // ignore: prefer_const_literals_to_create_immutables
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.recent_actors_sharp),
+                  text: 'Recents',
+                ),
+                Tab(
+                  icon: Icon(Icons.contact_phone),
+                  text: 'Contacts',
+                ),
+                Tab(
+                  icon: Icon(Icons.query_stats),
+                  text: 'Statistics',
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: <Widget>[
+              FutureBuilder(
+                future: asyncOperation(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Iterable<CallLogEntry> result =
+                        snapshot.data as Iterable<CallLogEntry>;
+                    _callLogEntries = result;
+
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(children: children),
+                      ),
+                    );
+                  } else {
+                    Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(children: children),
+                    ),
+                  );
+                },
+                // child: Center(
+                //   child: ElevatedButton(
+                //     onPressed: () async {
+                //       final Iterable<CallLogEntry> result =
+                //           await CallLog.query();
+                //       setState(() {
+                //         _callLogEntries = result;
+                //       });
+                //     },
+                //     child: const Text('Get all'),
+                //   ),
+                // ),
+              ),
+              Center(
+                child: Text('hey'),
+                // child: SfCartesianChart(
+                // series: <ChartSeries>[
+                //   BarSeries<Operator, String>(
+                //       dataSource: _operator,
+                //       xValueMapper: (Operator optr, _) => optr.name,
+                //       yValueMapper: (Operator optr, _) => optr.numberOfCalls)
+                // ],
+                // primaryXAxis: CategoryAxis(),
+                // ),
+              ),
+              Center(
+                child: SfCartesianChart(
+                  series: <ChartSeries>[
+                    BarSeries<Operator, String>(
+                        dataSource: _operator,
+                        xValueMapper: (Operator optr, _) => optr.name,
+                        yValueMapper: (Operator optr, _) => optr.numberOfCalls)
+                  ],
+                  primaryXAxis: CategoryAxis(),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {},
+            child: Icon(Icons.numbers),
+          ),
+        ),
+      ),
+      // ),
+    );
+  }
+
+  List<Operator> getOperator() {
+    List<Operator> operator = [
+      Operator('$a', callTypeOne),
+      Operator('$b', callTypeTwo),
+    ];
+    return operator;
+  }
+}
+
+class Durations {
+  String call;
+  double duration;
+
+  Durations(this.call, this.duration);
+}
+
+class Operator {
+  String name;
+  int numberOfCalls;
+
+  Operator(this.name, this.numberOfCalls);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import 'package:call_log/call_log.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:workmanager/workmanager.dart';
+
+///TOP-LEVEL FUNCTION PROVIDED FOR WORK MANAGER AS CALLBACK
+void callbackDispatcher() {
+  Workmanager().executeTask((dynamic task, dynamic inputData) async {
+    print('Background Services are Working!');
+    try {
+      final Iterable<CallLogEntry> cLog = await CallLog.get();
+      print('Queried call log entries');
+      for (CallLogEntry entry in cLog) {
+        print('-------------------------------------');
+        print('F. NUMBER  : ${entry.formattedNumber}');
+        print('C.M. NUMBER: ${entry.cachedMatchedNumber}');
+        print('NUMBER     : ${entry.number}');
+        print('NAME       : ${entry.name}');
+        print('TYPE       : ${entry.callType}');
+        print(
+            'DATE       : ${DateTime.fromMillisecondsSinceEpoch(entry.timestamp!)}');
+        print('DURATION   : ${entry.duration}');
+        print('ACCOUNT ID : ${entry.phoneAccountId}');
+        print('ACCOUNT ID : ${entry.phoneAccountId}');
+        print('SIM NAME   : ${entry.simDisplayName}');
+        print('-------------------------------------');
+      }
+      return true;
+    } on PlatformException catch (e, s) {
+      print(e);
+      print(s);
+      return true;
+    }
+  });
+}
+
+void main() {
+  runApp(MyApp());
+  Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+}
+
+/// example widget for call log plugin
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Iterable<CallLogEntry> _callLogEntries = <CallLogEntry>[];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // final Iterable<CallLogEntry> result = CallLog.get();
+    setState(() {
+      Future.delayed(Duration(seconds: 0), () async {
+        //your async 'await' codes goes here
+        final Iterable<CallLogEntry> result = await CallLog.query();
+        _callLogEntries = result;
+      });
+    });
+  }
+
+  @override
+  // Future<void> setState(VoidCallback fn) async {
+  //   // TODO: implement setState
+  //   super.setState(fn);
+  //   final Iterable<CallLogEntry> result = await CallLog.query();
+  //   setState(() {
+  //     _callLogEntries = result;
+  //   });
+  // }
+
+  @override
+  Widget build(BuildContext context) {
+    const TextStyle mono = TextStyle(fontFamily: 'monospace');
+    final List<Widget> children = <Widget>[];
+    for (CallLogEntry entry in _callLogEntries) {
+      children.add(
+        Column(
+          children: <Widget>[
+            const Divider(),
+            Text('F. NUMBER  : ${entry.formattedNumber}', style: mono),
+            Text('C.M. NUMBER: ${entry.cachedMatchedNumber}', style: mono),
+            Text('NUMBER     : ${entry.number}', style: mono),
+            Text('NAME       : ${entry.name}', style: mono),
+            Text('TYPE       : ${entry.callType}', style: mono),
+            Text(
+                'DATE       : ${DateTime.fromMillisecondsSinceEpoch(entry.timestamp!)}',
+                style: mono),
+            Text('DURATION   : ${entry.duration}', style: mono),
+            Text('ACCOUNT ID : ${entry.phoneAccountId}', style: mono),
+            Text('SIM NAME   : ${entry.simDisplayName}', style: mono),
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: const Text('call_log example')),
+        body: SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final Iterable<CallLogEntry> result =
+                          await CallLog.query();
+                      setState(() {
+                        _callLogEntries = result;
+                      });
+                    },
+                    child: const Text('Get all'),
+                  ),
+                ),
+              ),
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Workmanager().registerOneOffTask(
+                        DateTime.now().millisecondsSinceEpoch.toString(),
+                        'simpleTask',
+                        existingWorkPolicy: ExistingWorkPolicy.replace,
+                      );
+                    },
+                    child: const Text('Get all in background'),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(children: children),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

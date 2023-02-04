@@ -1,0 +1,991 @@
+// ignore_for_file: prefer_const_constructors, avoid_print
+import 'dart:io';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:call_log/call_log.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:firebase_core/firebase_core.dart';
+// import 'package:flutter/services.dart';
+import 'firebase_options.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences_android/shared_preferences_android.dart';
+// import 'package:shared_preferences_ios/shared_preferences_ios.dart';
+
+// const Task = 'logs';
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  // WidgetsFlutterBinding.ensureInitialized();
+  Workmanager().executeTask((taskName, inputData) {
+    // return initialiseFirebase();
+    // if (Platform.isAndroid) {
+    //   SharedPreferencesAndroid.registerWith();
+    // }
+    // switch (taskName) {
+    //   case 'logs':
+    //     print('logs printed');
+    //     break;
+    // }
+    if (taskName == 'call_logs') {
+      print('butonnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn');
+    }
+    final _sharedPreference =
+        SharedPreferences.getInstance(); //Initialize dependency
+
+    print('sucesssssssssssssssssssssssssssssssssssssssssssssssssssss');
+    var counts = 0;
+    print('logs started');
+    // Iterable<CallLogEntry> cLog = await CallLog.get();
+    print('Queried call log entries');
+    DatabaseReference ref = FirebaseDatabase.instance.ref('call_log/$counts');
+    ref.set({
+      "name": "bethuel",
+    });
+    // for (CallLogEntry entry in cLog) {
+    //   DatabaseReference ref = FirebaseDatabase.instance.ref('call_log/$counts');
+    //   counts++;
+    //   ref.set({
+    //     "name": '${entry.name}',
+    //     "number": '${entry.number}',
+    //     "type": '${entry.callType}',
+    //     "duration": '${entry.duration}',
+    //     "operator": '${entry.simDisplayName}',
+    //   }).asStream();
+    // }
+    // int? totalExecutions;
+    // final _sharedPreference =
+    //     await SharedPreferences.getInstance(); //Initialize dependency
+
+    // try {
+    //   //add code execution
+    //   totalExecutions = _sharedPreference.getInt("totalExecutions");
+    //   _sharedPreference.setInt(
+    //       "totalExecutions", totalExecutions == null ? 1 : totalExecutions + 1);
+
+    // } catch (err) {
+    //   // Logger().e(err.toString()); // Logger flutter package, prints error on the debug console
+    //   throw Exception(err);
+    // }
+
+    // }
+    // else {
+    //   print('logs not started');
+    //   try {
+    //     final Iterable<CallLogEntry> cLog = await CallLog.get();
+    //     print('Queried call log entries');
+    //     for (CallLogEntry entry in cLog) {
+    //       DatabaseReference ref =
+    //           FirebaseDatabase.instance.ref('post/${entry.timestamp}');
+    //       // setState(() {
+    //       //   counts++;
+    //       // });
+    //       counts++;
+    //       ref.set({
+    //         "name": '${entry.name}',
+    //         "number": '${entry.number}',
+    //         "call type": '${entry.number}',
+    //         "duration": '${entry.duration}',
+    //         "sim name": '${entry.simDisplayName}',
+    //       }).asStream();
+    //     }
+    //     // return true;
+    //   } on PlatformException catch (e, s) {
+    //     print(e);
+    //     print(s);
+    //     return true;
+    //   }
+    // }
+    return Future.value(true);
+  });
+}
+
+Future<void> main() async {
+  // var counts = 0;
+  // FirebaseOptions(
+  //         apiKey: 'AIzaSyBlhK6g78uhgu7AGHT6yxpugBImcnz9ZwQ',
+  //         appId: '1:4338846s24359:android:695a0b67d74d5ad21df942',
+  //         messagingSenderId:
+  //             '433884624359-vt09m7r8b9ad96icobooreqe3kooe299.apps.googleusercontent.com',
+  //         projectId: 'call-logs-a024b'));
+  // final Iterable<CallLogEntry> cLog = await CallLog.get();
+  // await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  // Workmanager().registerPeriodicTask('callLogs', 'logs',
+  //     frequency: Duration(minutes: 15));
+  WidgetsFlutterBinding.ensureInitialized();
+  Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  Workmanager().registerOneOffTask(
+    '1',
+    'logs',
+  );
+  runApp(Home());
+}
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> with WidgetsBindingObserver {
+  Iterable<CallLogEntry> _callLogEntries = <CallLogEntry>[];
+  late List<Operator> _operator;
+  var count = 0;
+  // final fb = FirebaseDatabase.instance;
+  // initialiseFirebase() {
+  // return final fb = FirebaseDatabase.instance;
+  // .ref('post/$count');
+  // setState(() {
+  //   count++;
+  // });
+  // ref.set({
+  //   "name": "Bethuel",
+  //   "number": "699066747",
+  //   "log_type": "missed",
+  //   "duration": "10s",
+  //   "sim name": "Orange"
+  // });
+  // }
+
+  // initialiseFirebase() {
+  //   for (CallLogEntry entry in _callLogEntries) {
+  //     DatabaseReference ref =
+  //         FirebaseDatabase.instance.ref('${entry.timestamp}');
+  //     ref.set({
+  //       "name": '${entry.name}',
+  //       "number": '${entry.number}',
+  //       "call type": '${entry.number}',
+  //       "duration": '${entry.duration}',
+  //       "sim name": '${entry.simDisplayName}',
+  //     });
+  //   }
+  // }
+
+  void postData() {}
+
+  var a;
+  var b;
+  int callTypeOne = 0;
+  int callTypeTwo = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    Workmanager().registerOneOffTask(
+      '3',
+      'logs',
+    );
+
+    // initTask();
+
+    setState(() {
+      asyncOperation();
+      print('init setstates $_callLogEntries');
+      _operator = getOperator();
+    });
+
+    // for (CallLogEntry entry in _callLogEntries) {
+    //   setState(() {
+    //     a = entry.simDisplayName;
+    //   });
+
+    //   if (entry.simDisplayName == a) {
+    //     setState(() {
+    //       callTypeOne++;
+    //     });
+    //   } else {
+    //     setState(() {
+    //       b = entry.simDisplayName;
+    //       callTypeTwo++;
+    //     });
+    //   }
+    // }
+  }
+
+  // Future<void> initTask() async {
+  //   await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
+  //   Workmanager()
+  //       .registerPeriodicTask('1', Task, frequency: Duration(minutes: 15));
+  // }
+
+  Future<Iterable<CallLogEntry>> asyncOperation() async {
+    Iterable<CallLogEntry> result = await CallLog.get();
+    setState(() {
+      _callLogEntries = result;
+    });
+    return _callLogEntries;
+  }
+
+  String formatDate(DateTime dt) {
+    return DateFormat('d-MMM-y H:m:s').format(dt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> children = <Widget>[];
+
+    for (CallLogEntry entry in _callLogEntries) {
+      // setState(() {
+      //   a = entry.simDisplayName;
+      // });
+
+      // if (entry.simDisplayName == a) {
+      //   setState(() {
+      //     callTypeOne++;
+      //   });
+      // } else {
+      //   setState(() {
+      //     b = entry.simDisplayName;
+      //     callTypeTwo++;
+      //   });
+      // }
+      children.add(
+        GestureDetector(
+          child: Card(
+            child: ListTile(
+              leading: Text('${entry.simDisplayName}'),
+              title: Text('${entry.name}'),
+              subtitle: Text(
+                  '${formatDate(DateTime.fromMillisecondsSinceEpoch(entry.timestamp!))} \n ${entry.duration}s \n ${entry.simDisplayName} \n $a ${entry.timestamp} \n $b $callTypeTwo'),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Call Log App'),
+            centerTitle: true,
+            bottom: TabBar(
+              // ignore: prefer_const_literals_to_create_immutables
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.recent_actors_sharp),
+                  text: 'Recents',
+                ),
+                Tab(
+                  icon: Icon(Icons.contact_phone),
+                  text: 'Contacts',
+                ),
+                Tab(
+                  icon: Icon(Icons.query_stats),
+                  text: 'Statistics',
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: <Widget>[
+              FutureBuilder(
+                future: asyncOperation(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Iterable<CallLogEntry> result =
+                        snapshot.data as Iterable<CallLogEntry>;
+                    _callLogEntries = result;
+
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(children: children),
+                      ),
+                    );
+                  } else {
+                    Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(children: children),
+                    ),
+                  );
+                },
+              ),
+              Center(
+                child: Text('hey'),
+              ),
+              Center(
+                child: SfCartesianChart(
+                  series: <ChartSeries>[
+                    BarSeries<Operator, String>(
+                        dataSource: _operator,
+                        xValueMapper: (Operator optr, _) => optr.name,
+                        yValueMapper: (Operator optr, _) => optr.numberOfCalls)
+                  ],
+                  primaryXAxis: CategoryAxis(),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              // var t = 0;
+              // Workmanager().registerPeriodicTask('2', 'call_logs',
+              //     frequency: Duration(minutes: 15));
+              // for (CallLogEntry entry in _callLogEntries) {
+              //   // @pragma("vm:entry-point")
+              //   // final ref = fb.ref().child('call_log/$count');
+              //   // setState(() {
+              //   //   count++;
+              //   // });
+              //   DatabaseReference ref =
+              //       FirebaseDatabase.instance.ref('call_log/$count');
+              //   setState(() {
+              //     count++;
+              //   });
+              //   ref.set({
+              //     "name": '${entry.name}',
+              //     "number": '${entry.number}',
+              //     "type": '${entry.callType}',
+              //     "duration": '${entry.duration}',
+              //     "operator": '${entry.simDisplayName}',
+              //   }).asStream();
+              //   setState(() {
+              //     t++;
+              //   });
+              //   if (t == 12) {
+              //     return;
+              //     // exit;
+              //     // exitCode;
+              //   }
+              // }
+
+              Platform.isAndroid
+                  ? () async {
+                      await Workmanager().registerPeriodicTask(
+                        '2',
+                        'call_logs',
+                        initialDelay: Duration(seconds: 10),
+                      );
+                      print('fb');
+                    }
+                  : null;
+            },
+            child: Icon(Icons.numbers),
+          ),
+        ),
+      ),
+      // ),
+    );
+  }
+
+  List<Operator> getOperator() {
+    List<Operator> operator = [
+      Operator('$a', callTypeOne),
+      Operator('$b', callTypeTwo),
+    ];
+    return operator;
+  }
+}
+
+class Durations {
+  String call;
+  double duration;
+
+  Durations(this.call, this.duration);
+}
+
+class Operator {
+  String name;
+  int numberOfCalls;
+
+  Operator(this.name, this.numberOfCalls);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ignore_for_file: prefer_const_constructors, avoid_print
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/material.dart';
+import 'package:call_log/call_log.dart';
+import 'package:intl/intl.dart';
+import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
+import 'firebase_options.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences_android/shared_preferences_android.dart';
+import 'package:flutter_background_service_android/flutter_background_service_android.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+// import 'package:shared_preferences_ios/shared_preferences_ios.dart';
+
+// Future<void> main() async {
+//   WidgetsFlutterBinding.ensureInitialized();
+//   Firebase.initializeApp(
+//     options: DefaultFirebaseOptions.currentPlatform,
+//   );
+//   Workmanager().registerOneOffTask(
+//     '1',
+//     'logs',
+//   );
+//   runApp(Home());
+// }
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeService();
+
+  runApp(Home());
+}
+
+Future<void> initializeService() async {
+  final service = FlutterBackgroundService();
+
+  /// OPTIONAL, using custom notification channel id
+  const AndroidNotificationChannel channel = AndroidNotificationChannel(
+    'my_foreground', // id
+    'MY FOREGROUND SERVICE', // title
+    description:
+        'This channel is used for important notifications.', // description
+    importance: Importance.low, // importance must be at low or higher level
+  );
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  // if (Platform.isIOS) {
+  //   await flutterLocalNotificationsPlugin.initialize(
+  //     const InitializationSettings(
+  //       iOS: IOSInitializationSettings(),
+  //     ),
+  //   );
+  // }
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await service.configure(
+    androidConfiguration: AndroidConfiguration(
+      // this will be executed when app is in foreground or background in separated isolate
+      onStart: onStart,
+
+      // auto start service
+      autoStart: true,
+      isForegroundMode: true,
+
+      notificationChannelId: 'my_foreground',
+      initialNotificationTitle: 'AWESOME SERVICE',
+      initialNotificationContent: 'Initializing',
+      foregroundServiceNotificationId: 888,
+    ),
+    iosConfiguration: IosConfiguration(
+      // auto start service
+      autoStart: true,
+
+      // this will be executed when app is in foreground in separated isolate
+      onForeground: onStart,
+
+      // you have to enable background fetch capability on xcode project
+      onBackground: onIosBackground,
+    ),
+  );
+
+  service.startService();
+}
+
+// const notificationChannelId = 'my_foreground';
+
+// const notificationId = 888;
+
+@pragma('vm:entry-point')
+Future<bool> onIosBackground(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  await preferences.reload();
+  final log = preferences.getStringList('log') ?? <String>[];
+  log.add(DateTime.now().toIso8601String());
+  await preferences.setStringList('log', log);
+
+  return true;
+}
+
+@pragma('vm:entry-point')
+void onStart(ServiceInstance service) async {
+  // Only available for flutter 3.0.0 and later
+  DartPluginRegistrant.ensureInitialized();
+
+  // For flutter prior to version 3.0.0
+  // We have to register the plugin manually
+
+  SharedPreferences preferences = await SharedPreferences.getInstance();
+  await preferences.setString("hello", "world");
+
+  /// OPTIONAL when use custom notification
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  if (service is AndroidServiceInstance) {
+    service.on('setAsForeground').listen((event) {
+      service.setAsForegroundService();
+    });
+
+    service.on('setAsBackground').listen((event) {
+      service.setAsBackgroundService();
+    });
+  }
+
+  service.on('stopService').listen((event) {
+    service.stopSelf();
+  });
+
+  // bring to foreground
+  Timer.periodic(const Duration(seconds: 1), (timer) async {
+    if (service is AndroidServiceInstance) {
+      if (await service.isForegroundService()) {
+        /// OPTIONAL for use custom notification
+        /// the notification id must be equals with AndroidConfiguration when you call configure() method.
+        flutterLocalNotificationsPlugin.show(
+          888,
+          'COOL SERVICE',
+          'Awesome ${DateTime.now()}',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'my_foreground',
+              'MY FOREGROUND SERVICE',
+              icon: 'ic_bg_service_small',
+              ongoing: true,
+            ),
+          ),
+        );
+
+        // if you don't using custom notification, uncomment this
+        // service.setForegroundNotificationInfo(
+        //   title: "My App Service",
+        //   content: "Updated at ${DateTime.now()}",
+        // );
+      }
+    }
+
+    /// you can see this log in logcat
+    print('FLUTTER BACKGROUND SERVICE: ${DateTime.now()}');
+
+    // test using external plugin
+    final deviceInfo = DeviceInfoPlugin();
+    String? device;
+    if (Platform.isAndroid) {
+      final androidInfo = await deviceInfo.androidInfo;
+      device = androidInfo.model;
+    }
+
+    if (Platform.isIOS) {
+      final iosInfo = await deviceInfo.iosInfo;
+      device = iosInfo.model;
+    }
+
+    service.invoke(
+      'update',
+      {
+        "current_date": DateTime.now().toIso8601String(),
+        "device": device,
+      },
+    );
+  });
+}
+
+class Home extends StatefulWidget {
+  const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> with WidgetsBindingObserver {
+  Iterable<CallLogEntry> _callLogEntries = <CallLogEntry>[];
+  late List<Operator> _operator;
+  var count = 0;
+  String text = "Stop Service";
+
+  void postData() {}
+
+  var a;
+  var b;
+  int callTypeOne = 0;
+  int callTypeTwo = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    Workmanager().registerOneOffTask(
+      '3',
+      'logs',
+    );
+
+    // initTask();
+
+    setState(() {
+      asyncOperation();
+      print('init setstates $_callLogEntries');
+      _operator = getOperator();
+    });
+  }
+
+  Future<Iterable<CallLogEntry>> asyncOperation() async {
+    Iterable<CallLogEntry> result = await CallLog.get();
+    setState(() {
+      _callLogEntries = result;
+    });
+    return _callLogEntries;
+  }
+
+  String formatDate(DateTime dt) {
+    return DateFormat('d-MMM-y H:m:s').format(dt);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> children = <Widget>[];
+
+    for (CallLogEntry entry in _callLogEntries) {
+      children.add(
+        GestureDetector(
+          child: Card(
+            child: ListTile(
+              leading: Text('${entry.simDisplayName}'),
+              title: Text('${entry.name}'),
+              subtitle: Text(
+                  '${formatDate(DateTime.fromMillisecondsSinceEpoch(entry.timestamp!))} \n ${entry.duration}s \n ${entry.simDisplayName} \n $a ${entry.timestamp} \n $b $callTypeTwo'),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text('Call Log App'),
+            centerTitle: true,
+            bottom: TabBar(
+              // ignore: prefer_const_literals_to_create_immutables
+              tabs: [
+                Tab(
+                  icon: Icon(Icons.recent_actors_sharp),
+                  text: 'Recents',
+                ),
+                Tab(
+                  icon: Icon(Icons.contact_phone),
+                  text: 'Contacts',
+                ),
+                Tab(
+                  icon: Icon(Icons.query_stats),
+                  text: 'Statistics',
+                ),
+              ],
+            ),
+          ),
+          body: TabBarView(
+            children: <Widget>[
+              FutureBuilder(
+                future: asyncOperation(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    Iterable<CallLogEntry> result =
+                        snapshot.data as Iterable<CallLogEntry>;
+                    _callLogEntries = result;
+
+                    return SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(children: children),
+                      ),
+                    );
+                  } else {
+                    Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  return SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(children: children),
+                    ),
+                  );
+                },
+              ),
+              Center(
+                child: Column(
+                  children: [
+                    StreamBuilder<Map<String, dynamic>?>(
+                      stream: FlutterBackgroundService().on('update'),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+
+                        final data = snapshot.data!;
+                        String? device = data["device"];
+                        DateTime? date =
+                            DateTime.tryParse(data["current_date"]);
+                        return Column(
+                          children: [
+                            Text(device ?? 'Unknown'),
+                            Text(date.toString()),
+                          ],
+                        );
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text("Foreground Mode"),
+                      onPressed: () {
+                        FlutterBackgroundService().invoke("setAsForeground");
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text("Background Mode"),
+                      onPressed: () {
+                        FlutterBackgroundService().invoke("setAsBackground");
+                      },
+                    ),
+                    ElevatedButton(
+                      child: Text(text),
+                      onPressed: () async {
+                        final service = FlutterBackgroundService();
+                        var isRunning = await service.isRunning();
+                        if (isRunning) {
+                          service.invoke("stopService");
+                        } else {
+                          service.startService();
+                        }
+
+                        if (!isRunning) {
+                          text = 'Stop Service';
+                        } else {
+                          text = 'Start Service';
+                        }
+                        setState(() {});
+                      },
+                    ),
+                    const Expanded(
+                      child: LogView(),
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: SfCartesianChart(
+                  series: <ChartSeries>[
+                    BarSeries<Operator, String>(
+                        dataSource: _operator,
+                        xValueMapper: (Operator optr, _) => optr.name,
+                        yValueMapper: (Operator optr, _) => optr.numberOfCalls)
+                  ],
+                  primaryXAxis: CategoryAxis(),
+                ),
+              ),
+            ],
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              // var t = 0;
+              // Workmanager().registerPeriodicTask('2', 'call_logs',
+              //     frequency: Duration(minutes: 15));
+              // for (CallLogEntry entry in _callLogEntries) {
+              //   DatabaseReference ref =
+              //       FirebaseDatabase.instance.ref('call_log/$count');
+              //   setState(() {
+              //     count++;
+              //   });
+              //   ref.set({
+              //     "name": '${entry.name}',
+              //     "number": '${entry.number}',
+              //     "type": '${entry.callType}',
+              //     "duration": '${entry.duration}',
+              //     "operator": '${entry.simDisplayName}',
+              //   }).asStream();
+              //   setState(() {
+              //     t++;
+              //   });
+              //   if (t == 12) {
+              //     return;
+              //     // exit;
+              //     // exitCode;
+              //   }
+              // }
+
+              Platform.isAndroid
+                  ? () async {
+                      await Workmanager().registerPeriodicTask(
+                        '2',
+                        'call_logs',
+                        initialDelay: Duration(seconds: 10),
+                      );
+                      print('fb');
+                    }
+                  : null;
+            },
+            child: Icon(Icons.numbers),
+          ),
+        ),
+      ),
+      // ),
+    );
+  }
+
+  List<Operator> getOperator() {
+    List<Operator> operator = [
+      Operator('$a', callTypeOne),
+      Operator('$b', callTypeTwo),
+    ];
+    return operator;
+  }
+}
+
+class Durations {
+  String call;
+  double duration;
+
+  Durations(this.call, this.duration);
+}
+
+class Operator {
+  String name;
+  int numberOfCalls;
+
+  Operator(this.name, this.numberOfCalls);
+}
+
+class LogView extends StatefulWidget {
+  const LogView({Key? key}) : super(key: key);
+
+  @override
+  State<LogView> createState() => _LogViewState();
+}
+
+class _LogViewState extends State<LogView> {
+  late final Timer timer;
+  List<String> logs = [];
+
+  @override
+  void initState() {
+    super.initState();
+    timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      final SharedPreferences sp = await SharedPreferences.getInstance();
+      await sp.reload();
+      logs = sp.getStringList('log') ?? [];
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: logs.length,
+      itemBuilder: (context, index) {
+        final log = logs.elementAt(index);
+        return Text(log);
+      },
+    );
+  }
+}
